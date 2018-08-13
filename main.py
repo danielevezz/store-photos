@@ -53,7 +53,11 @@ for img in imageList:
                 lat = str(convert_to_degrees(gpsinfo["GPSLatitude"]))
                 lon = str(convert_to_degrees(gpsinfo["GPSLongitude"]))
                 geolocator = Photon()
-                location = geolocator.reverse(Point(lat, lon))
+                try:
+                    location = geolocator.reverse(Point(lat, lon))
+                except Exception as e:
+                    print(str(e))
+
                 altitude = location.altitude
                 location = location.address.split(",")
                 paese = f" - {location[5].strip()}"
