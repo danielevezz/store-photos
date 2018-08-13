@@ -27,6 +27,7 @@ PATH = argv[1]
 
 os.chdir(PATH)
 imageList = os.listdir()
+print(f"Ci sono {len(imageList)} elementi in questa cartella")
 
 for img in imageList:
     if os.path.isdir(img):
