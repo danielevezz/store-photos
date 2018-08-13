@@ -24,6 +24,7 @@ def convert_to_degrees(value):
 
 paese = ""
 PATH = argv[1]
+geolocator = Photon()
 
 os.chdir(PATH)
 imageList = os.listdir()
@@ -53,7 +54,6 @@ for img in imageList:
             if all(k in gpsinfo for k in ("GPSLatitude", "GPSLongitude")):
                 lat = str(convert_to_degrees(gpsinfo["GPSLatitude"]))
                 lon = str(convert_to_degrees(gpsinfo["GPSLongitude"]))
-                geolocator = Photon()
                 try:
                     location = geolocator.reverse(Point(lat, lon))
                     altitude = location.altitude
@@ -62,8 +62,6 @@ for img in imageList:
                     print(paese, altitude, sep=" ")
                 except Exception as e:
                     print(str(e))
-
-
 
         if "DateTime" in exif:
             photoDate = exif["DateTime"]
