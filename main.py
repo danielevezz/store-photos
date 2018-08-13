@@ -56,13 +56,14 @@ for img in imageList:
                 geolocator = Photon()
                 try:
                     location = geolocator.reverse(Point(lat, lon))
+                    altitude = location.altitude
+                    location = location.address.split(",")
+                    paese = f" - {location[5].strip()}"
+                    print(paese, altitude, sep=" ")
                 except Exception as e:
                     print(str(e))
 
-                altitude = location.altitude
-                location = location.address.split(",")
-                paese = f" - {location[5].strip()}"
-                print(paese, altitude, sep=" ")
+
 
         if "DateTime" in exif:
             photoDate = exif["DateTime"]
