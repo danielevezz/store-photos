@@ -2,81 +2,52 @@ import os
 import datetime
 from PIL import Image, ExifTags
 from sys import argv
-from geopy.geocoders import Photon
-from geopy.point import Point
 
-
-def convert_to_degrees(value):
-    d0 = value[0][0]
-    d1 = value[0][1]
-    d = float(d0) / float(d1)
-
-    m0 = value[1][0]
-    m1 = value[1][1]
-    m = float(m0) / float(m1)
-
-    s0 = value[2][0]
-    s1 = value[2][1]
-    s = float(s0) / float(s1)
-
-    return d + (m / 60.0) + (s / 3600.0)
-
-
-paese = ""
+# Take directory from cli
 PATH = argv[1]
-geolocator = Photon()
 
+# Go into that folder
 os.chdir(PATH)
+
+# Take all filenames
 imageList = os.listdir()
-print(f"Ci sono {len(imageList)} elementi in questa cartella")
+
+# Filter out all .png
+imageList = [str(img) for img in imageList if ".png" not in str(img)]
+print(f"There are {len(imageList)} elements in this folder")
 
 for img in imageList:
+    # Filter out all folders
     if os.path.isdir(img):
         continue
-    imgPath = PATH + str(img)
-    if ".png" in imgPath:
-        continue
+
+    # Create path for image
+    imgPath = PATH + img
 
     tmp = Image.open(imgPath)
+    # Get exif data from that image
     tags = tmp._getexif()
+
+    # If there is data then create a dictionary with it
     if tags is not None:
         exif = {ExifTags.TAGS[k]: v for k,
                 v in tags.items() if k in ExifTags.TAGS}
-        # print(exif)
 
-        if "GPSInfo" in exif:
-            gpsinfo = {}
-
-            for key in exif['GPSInfo'].keys():
-                decode = ExifTags.GPSTAGS.get(key, key)
-                gpsinfo[decode] = exif['GPSInfo'][key]
-
-            if all(k in gpsinfo for k in ("GPSLatitude", "GPSLongitude")):
-                lat = str(convert_to_degrees(gpsinfo["GPSLatitude"]))
-                lon = str(convert_to_degrees(gpsinfo["GPSLongitude"]))
-                try:
-                    location = geolocator.reverse(Point(lat, lon))
-                    altitude = location.altitude
-                    location = location.address.split(",")
-                    paese = f" - {location[5].strip()}"
-                    print(paese, altitude, sep=" ")
-                except Exception as e:
-                    print(str(e))
-
+        # if there is date info then process it
         if "DateTime" in exif:
             photoDate = exif["DateTime"]
             shotDate = datetime.datetime.strptime(
                 photoDate, "%Y:%m:%d %H:%M:%S")
+
+            # the folder is named after the date
             folderName = f"{shotDate:%d-%m-%Y}"
-            if os.path.isdir(folderName):
-                print("Folder already present")
-            else:
+
+            # if the folder already exists then do not create it
+            if not os.path.isdir(folderName):
+                print(f"Create folder {folderName}")
                 os.mkdir(folderName)
-            imgTmp = str(img).split(".")
-            imgName = f"{imgTmp[0]}{paese}.{imgTmp[1]}"
+            imgName = str(img)
+
+            # move the file into the directory
             os.rename(imgPath, PATH + folderName + "/" + imgName)
-            paese = ""
-        if "Model" in exif:
-            print(exif["Model"])
-        if "Make" in exif:
-            print(exif["Make"])
+            print(f"Moved {imgName} into {folderName}")
