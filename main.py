@@ -14,6 +14,7 @@ imageList = os.listdir()
 
 # Filter out all .png
 imageList = [str(img) for img in imageList if ".png" not in str(img)]
+imageList = [str(img) for img in imageList if ".mp4" not in str(img)]
 print(f"There are {len(imageList)} elements in this folder")
 
 for img in imageList:
